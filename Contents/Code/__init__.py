@@ -71,7 +71,7 @@ class XBMCNFO(PlexAgent):
 
     Uses XBMC nfo files as the metadata source for Plex Movies.
     """
-    name = 'XBMCnfoMoviesImporter'
+    name = 'XBMCnfoXXImporter'
     ver = '1.1-99-g694bbd7-205'
     primary_provider = True
     languages = [Locale.Language.NoLanguage]
@@ -363,9 +363,19 @@ class XBMCNFO(PlexAgent):
                 log.debug('Removing empty XML tags from movies nfo...')
                 nfo_xml = remove_empty_tags(nfo_xml)
 
+                xx_id = ""
+                # Title
+                try:
+                    xx_id = nfo_xml.xpath('id')[0].text.strip()
+                except:
+                    log.debug('No <id> tag in {nfo}.'.format(
+                        nfo=nfo_file))
+                    pass
                 # Title
                 try:
                     metadata.title = nfo_xml.xpath('title')[0].text.strip()
+                    if xx_id != "":
+                        metadata.title = metadata.title + " [" + xx_id + "]"
                 except:
                     log.debug('ERROR: No <title> tag in {nfo}.'
                               ' Aborting!'.format(nfo=nfo_file))
@@ -624,6 +634,13 @@ class XBMCNFO(PlexAgent):
                 try:
                     genres = nfo_xml.xpath('genre')
                     metadata.genres.clear()
+                    if xx_id != "":
+                        try:
+                            codes =  xx_id.split('-')
+                            if len(codes) > 1:
+                                metadata.genres.add("[" + codes[0] + "]")
+                        except:
+                            pass
                     [metadata.genres.add(g.strip()) for genreXML in genres for g in genreXML.text.split('/')]
                     metadata.genres.discard('')
                 except:
@@ -811,7 +828,7 @@ class XBMCNFO(PlexAgent):
                          ' Aborting!'.format(nfo=nfo_file))
             return metadata
 
-xbmcnfo = XBMCNFO
+xbmcnfoxx = XBMCNFO
 
 
 # -- LOG ADAPTER -------------------------------------------------------------
