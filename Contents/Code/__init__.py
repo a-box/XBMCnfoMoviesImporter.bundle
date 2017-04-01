@@ -157,9 +157,20 @@ class XBMCNFO(PlexAgent):
                               ' Aborting!'.format(nfo=nfo_file))
                     return
 
+                    
+                    
+                xx_id = ""
+                try:
+                    xx_id = nfo_xml.xpath('id')[0].text.strip()
+                except:
+                    log.debug('No <id> tag in {nfo}.'.format(
+                        nfo=nfo_file))
+                    pass
                 # Title
                 try:
                     media.name = nfo_xml.xpath('title')[0].text
+                    if xx_id != "":
+                        media.name ="[" + xx_id + "] " + media.name 
                 except:
                     log.debug('ERROR: No <title> tag in {nfo}.'
                               ' Aborting!'.format(nfo=nfo_file))
@@ -700,23 +711,51 @@ class XBMCNFO(PlexAgent):
                         pass
                 # Actors
                 metadata.roles.clear()
+                count = 0
                 for n, actor in enumerate(nfo_xml.xpath('actor')):
+                    count = count + 1
                     role = metadata.roles.new()
                     try:
                         role.name = actor.xpath('name')[0].text
                     except:
-                        role.name = 'Unknown Name ' + str(n)
+                        role.name = 'Unknown Name ' + str(count)
                         pass
                     try:
                         role.role = actor.xpath('role')[0].text
                     except:
-                        role.role = 'Unknown Role ' + str(n)
+                        role.role = 'Unknown Role ' + str(count)
                         pass
                     try:
                         role.photo = actor.xpath('thumb')[0].text
                     except:
                         pass
+                # Add Genre to Actors
+                # for genreXML in genres for g in genreXML.text.split('/')]
+                
+                for genreXML in genres:
+                    for g in genreXML.text.split('/'):
+                        role = metadata.roles.new()
+                        try:
+                            role.name = "" + g.strip() + ""
+                        except:
+                            role.name = "不明" + str(n) + ""
+                            pass
+                        try:
+                            role.role = actor.xpath('role')[0].text
+                        except:
+                            try:
+                                role.role =  g.strip()
+                            except:
+                                role.role = '不明 ' + str(count + n)
+                                pass
+                            pass
+                        try:
+                            role.photo = actor.xpath('thumb')[0].text
+                        except:
+                            pass
 
+
+                        
                 if not preferences['localmediaagent']:
                     # Trailer Support
                     # Eden / Frodo
